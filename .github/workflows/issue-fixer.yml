@@ -1,0 +1,56 @@
+name: Issue Auto Fixer
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  auto-fix:
+    if: github.event.label.name == 'auto-fix'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auto-fix via Codex
+        run: |
+          npm install -g @openai/codex
+          export OPENAI_API_KEY="${{ secrets.OPENAI_KEY }}"
+          # Save issue body to a temp file to handle multi-line content
+          echo '${{ github.event.issue.body }}' > issue_body.txt
+          # Use the issue body as input to codex, escaping potential quotes
+          issue_text=$(cat issue_body.txt | sed 's/"/\\"/g')
+          codex --approval-mode full-auto --quiet "Carefully review this issue and make the code changes to fix this code. Issue details: $issue_text"
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          committer: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          commit-message: "Auto-fix for issue #${{ github.event.issue.number }}"
+          title: "Auto-fix for issue #${{ github.event.issue.number }}"
+          body: |
+            This PR was automatically created in response to issue #${{ github.event.issue.number }}
+
+            Issue Title: ${{ github.event.issue.title }}
+          branch: fix/issue-${{ github.event.issue.number }}
+          base: main
+          delete-branch: true
+          labels: |
+            automated
+            auto-fix
+
+      - name: Add comment to issue
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            I've created a pull request with the requested changes: #${{ steps.create_pr.outputs.pull-request-number }}
+
+            The issue content has been saved to a file and is ready for review.
