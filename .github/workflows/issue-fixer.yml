@@ -28,7 +28,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          committer: "github-actions[bot] <github-actions[bot]@users.noreply.github.com"
+          committer: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
           commit-message: "Auto-fix for issue #${{ github.event.issue.number }}"
           title: "Auto-fix for issue #${{ github.event.issue.number }}"
           body: |
