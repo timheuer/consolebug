@@ -12,16 +12,10 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Create branch
-        run: |
-          branch_name="fix/issue-${{ github.event.issue.number }}"
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git checkout -b $branch_name
 
       - name: Auto-fix via Codex
         run: |
@@ -29,21 +23,13 @@ jobs:
           export OPENAI_API_KEY="${{ secrets.OPENAI_KEY }}"
           codex --approval-mode full-auto --quiet "Carefully review this issue and make the code changes to fix this code. Make the changes to files as needed."
 
-      - name: Commit and push changes
-        run: |
-          git add .
-          # Check if there are any changes to commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          else
-            git commit -m "Auto-fix for issue #${{ github.event.issue.number }}"
-            git push origin fix/issue-${{ github.event.issue.number }}
-          fi
-
       - name: Create Pull Request
+        id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          committer: "github-actions[bot] <github-actions[bot]@users.noreply.github.com"
+          commit-message: "Auto-fix for issue #${{ github.event.issue.number }}"
           title: "Auto-fix for issue #${{ github.event.issue.number }}"
           body: |
             This PR was automatically created in response to issue #${{ github.event.issue.number }}
@@ -60,6 +46,6 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            I've created a pull request with the requested changes: #${{ steps.create-pull-request.outputs.pull-request-number }}
+            I've created a pull request with the requested changes: #${{ steps.create_pr.outputs.pull-request-number }}
 
             The issue content has been saved to a file and is ready for review.
