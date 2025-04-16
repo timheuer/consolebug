@@ -23,13 +23,11 @@ jobs:
           git config --global user.email "actions@github.com"
           git checkout -b $branch_name
 
-      - name: Create file with issue content
+      - name: Update changelog via Codex
         run: |
-          mkdir -p .issues
-          echo "Issue Title: ${{ github.event.issue.title }}" > .issues/issue-${{ github.event.issue.number }}.txt
-          echo "" >> .issues/issue-${{ github.event.issue.number }}.txt
-          echo "Issue Body:" >> .issues/issue-${{ github.event.issue.number }}.txt
-          echo "${{ github.event.issue.body }}" >> .issues/issue-${{ github.event.issue.number }}.txt
+          npm install -g @openai/codex
+          export OPENAI_API_KEY="${{ secrets.OPENAI_KEY }}"
+          codex -a full-auto --quiet "Carefully review this issue and make the code changes to fix this code."
 
       - name: Commit and push changes
         run: |
