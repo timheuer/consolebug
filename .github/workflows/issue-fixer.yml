@@ -27,7 +27,7 @@ jobs:
         run: |
           npm install -g @openai/codex
           export OPENAI_API_KEY="${{ secrets.OPENAI_KEY }}"
-          codex -a full-auto --quiet "Carefully review this issue and make the code changes to fix this code."
+          codex --approval-mode full-auto --quiet "Carefully review this issue and make the code changes to fix this code. Make the changes to files as needed."
 
       - name: Commit and push changes
         run: |
