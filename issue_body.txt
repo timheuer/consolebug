@@ -1,0 +1,9 @@
+There is an issue with this app. it is not building correctly.
+
+Error is:
+```
+  ConsoleApp1 failed with 1 error(s) (2.8s)
+    C:\Users\timheuer\source\repos\consolebug\ConsoleApp1\Program.cs(7,42): error CS1002: ; expected
+
+Build failed with 1 error(s) in 4.5s
+```
